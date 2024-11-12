@@ -1,50 +1,58 @@
-import speech_recognition as sr
-from gpiozero import LED
-from time import sleep
+import speech_recognition as sr  # Import the speech recognition library
+from gpiozero import LED  # Import the GPIOZero library to control the LED
+from time import sleep  # Import sleep for potential pauses if needed in the future
 
-# Setup GPIO
-led = LED(17)  
+# Setup GPIO for the LED
+led = LED(17)  # Define LED on GPIO pin 17
 
-# Initialize the recognizer
+# Initialize the speech recognizer
 recognizer = sr.Recognizer()
 
-# Use the default microphone as the audio source
+# Use the default microphone as the audio input source
 mic = sr.Microphone()
 
-# Function to recognize speech and control LED
+# Function to recognize speech commands and control the LED based on voice input
 def listen_and_control():
-    with mic as source:
-        recognizer.adjust_for_ambient_noise(source)  # Adjust for background noise
-        print("Listening...")
+    with mic as source:  # Open the microphone resource
+        # Adjust the recognizer to ambient noise levels for more accurate results
+        recognizer.adjust_for_ambient_noise(source)
+        print("Listening for commands...")
 
         while True:
             try:
-                # Listen for audio 
+                # Listen to audio from the microphone
                 audio = recognizer.listen(source)
-                text = recognizer.recognize_google(audio).lower()  # Convert to lowercase for easier comparison
+
+                # Recognize speech using Google’s online speech recognition service
+                text = recognizer.recognize_google(audio).lower()  # Convert recognized text to lowercase
                 print(f"You said: {text}")
 
-                # Control the LED based on the voice command
+                # Check the recognized text for specific commands and control the LED
                 if "turn on the light" in text:
-                    led.on()  # Turn on the LED
+                    led.on()  # Turn on the LED if command is recognized
                     print("Light turned ON")
                 elif "turn off the light" in text:
-                    led.off()  # Turn off the LED
+                    led.off()  # Turn off the LED if command is recognized
                     print("Light turned OFF")
                 else:
+                    # Inform the user if the command is not recognized
                     print("Unknown command. Please say 'turn on the light' or 'turn off the light'.")
 
+            # Exception handling for unrecognized speech
             except sr.UnknownValueError:
-                print("Sorry, I didn't catch that.")
+                print("Sorry, I didn't catch that. Could you please repeat?")
+            # Exception handling for connection issues with the speech recognition service
             except sr.RequestError as e:
                 print(f"Error connecting to Google Speech Recognition service; {e}")
 
-# Main function to run the program
+# Main function to initialize and start the program
 def main():
     try:
-        listen_and_control()  # Start listening and controlling the LED
+        listen_and_control()  # Start listening for commands and controlling the LED
     except KeyboardInterrupt:
+        # Cleanly exit the program when interrupted by the user
         print("Program stopped.")
 
-if _name_ == "_main_":
+# Ensure the program runs only if this file is executed directly
+if __name__ == "__main__":
     main()
